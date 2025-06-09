@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Exit on error
+set -e
+
+echo "Updating package index..."
+sudo apt update
+
+echo "Installing OpenJDK 17..."
+sudo apt install -y openjdk-17-jdk
+
+echo "Verifying Java installation..."
+java -version
+
+echo "Setting up Jenkins repository..."
+sudo mkdir -p /etc/apt/keyrings
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian/jenkins.io-2023.key
+
+echo "Adding Jenkins to apt sources..."
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/" | \
+  sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+echo "Updating package index again..."
+sudo apt update
+
+echo "Installing Jenkins..."
+sudo apt install -y jenkins
+
+echo "Starting and enabling Jenkins service..."
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+
+echo "Checking Jenkins status..."
+sudo systemctl status jenkins
+
+echo "Configuring firewall (UFW) to allow port 8080..."
+sudo ufw allow 8080
+sudo ufw status
+
+echo "Jenkins installation completed successfully."
